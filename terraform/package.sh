@@ -8,7 +8,7 @@ ZIP_FILE="lambda.zip"
 
 # Clean up any previous zip file
 if [ -f "$ZIP_FILE" ]; then
-  echo "Removing existing $ZIP_FILE..."
+  echo "Removing existing $ZIP_FILE..." >&2
   rm "$ZIP_FILE"
 fi
 
@@ -31,4 +31,4 @@ zip -r "terraform/$ZIP_FILE" handler.js node_modules > /dev/null
 cd terraform
 
 # Output result for Terraform
-echo "{\"zip_path\": \"$(pwd)/$ZIP_FILE\"}"
+echo "{\"zip_path\": \"$(pwd)/$ZIP_FILE\"}" 1>&1
