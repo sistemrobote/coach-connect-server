@@ -22,8 +22,8 @@ if [ ! -d "$ROOT_DIR/node_modules" ]; then
   exit 1
 fi
 
-# Package Lambda function
-(cd "$ROOT_DIR" && zip -rq "$ZIP_PATH" handler.js node_modules)
+# Build ZIP from repo root (handler.js + node_modules)
+zip -r "$ZIP_FILE" ../handler.js ../node_modules > /dev/null
 
 # Output only JSON for Terraform
-echo "{\"zip_path\": \"$ZIP_PATH\"}"
+echo "{\"zip_path\": \"$(pwd)/$ZIP_FILE\"}"
