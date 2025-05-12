@@ -36,6 +36,10 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Import (if role exists)
+        run: |
+          terraform import aws_iam_role.lambda_exec lambda_exec_role_test || true
+
       - name: Terraform Apply (local environment)
         run: terraform apply -var-file="test.tfvars" -auto-approve
         env:
