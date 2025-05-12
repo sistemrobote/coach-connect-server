@@ -31,7 +31,10 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Run package.sh to build Lambda ZIP
-        run: bash package.sh
+        run: |
+          bash package.sh
+          ls -lh
+          cat lambda.zip > /dev/null || echo "lambda.zip missing!"
 
       - name: Terraform Init
         run: terraform init

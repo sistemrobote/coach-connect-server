@@ -1,18 +1,34 @@
 #!/bin/bash
-set -e
 
-# Absolute path to this script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+set -e  # Exit on error
+set -o pipefail
 
-# Assume your Node.js app is one level above the terraform/ folder
-APP_DIR="$SCRIPT_DIR/.."
-ZIP_OUT="$SCRIPT_DIR/function.zip"
+# Define the zip file path
+ZIP_FILE="lambda.zip"
 
-# Move to app dir and zip code
-cd "$APP_DIR"
-rm -f "$ZIP_OUT"
-npm install --omit=dev > /dev/null 2>&1
-zip -r "$ZIP_OUT" handler.js app.js node_modules > /dev/null
+# Clean up any previous zip file
+if [ -f "$ZIP_FILE" ]; then
+  echo "Removing existing $ZIP_FILE..."
+  rm "$ZIP_FILE"
+fi
 
-# Output JSON only
-echo "{\"zip_path\": \"$ZIP_OUT\"}"
+# Ensure handler and node_modules exist
+if [ ! -f "../handler.js" ]; then
+  echo "❌ Error: handler.js not found in project root"
+  exit 1
+fi
+
+if [ ! -d "../node_modules" ]; then
+  echo "❌ Error: node_modules directory not found in project root"
+  exit 1
+fi
+
+# Navigate to project root, zip the Lambda function files
+cd ..
+zip -r "terraform/$ZIP_FILE" handler.js node_modules > /dev/null
+
+# Navigate back to terraform folder
+cd terraform
+
+# Output result for Terraform
+echo "{\"zip_path\": \"$(pwd)/$ZIP_FILE\"}"
