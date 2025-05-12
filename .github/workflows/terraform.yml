@@ -41,8 +41,18 @@ jobs:
       - name: Run package.sh to build Lambda ZIP
         run: |
           bash package.sh
-          ls -lh
-          cat lambda.zip > /dev/null || echo "lambda.zip missing!"
+
+      - name: Check Lambda zip exists
+        run: |
+          ls -lh terraform/lambda.zip
+          unzip -l terraform/lambda.zip
+      
+      - name: Validate Lambda ZIP
+        run: |
+          echo "Verifying lambda.zip..."
+          ls -lh terraform/lambda.zip
+          unzip -l terraform/lambda.zip
+          file terraform/lambda.zip
 
       - name: Terraform Init
         run: terraform init
