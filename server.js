@@ -21,8 +21,11 @@ app.get('/test', (req, res) => {
 
 app.get('/auth/exchange_token', async (req, res) => {
     const { code } = req.query;
-    console.log(" code:", code)
+    console.log(" code:>>>", code)
     try {
+        console.log(" STRAVA_CLIENT_ID:>>>", STRAVA_CLIENT_ID);
+        console.log(" STRAVA_CLIENT_SECRET:>>>", STRAVA_CLIENT_SECRET);
+
         const response = await axios.post('https://www.strava.com/api/v3/oauth/token', {
             client_id: STRAVA_CLIENT_ID,
             client_secret: STRAVA_CLIENT_SECRET,

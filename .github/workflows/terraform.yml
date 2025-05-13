@@ -1,76 +1,76 @@
-# name: Terraform Deploy
+name: Terraform Deploy
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   terraform:
-#     name: Apply Terraform in /terraform
-#     runs-on: ubuntu-latest
+jobs:
+  terraform:
+    name: Apply Terraform in /terraform
+    runs-on: ubuntu-latest
 
-#     defaults:
-#       run:
-#         working-directory: terraform
+    defaults:
+      run:
+        working-directory: terraform
 
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: 1.6.6
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
 
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
       
-#       - name: Set up Node.js
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: 22
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
 
-#       - name: Install dependencies
-#         run: npm ci
-#         working-directory: ./
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./
 
-#       - name: Install npm dependencies
-#         run: npm ci
+      - name: Install npm dependencies
+        run: npm ci
 
-#       - name: Run package.sh to build Lambda ZIP
-#         run: |
-#           bash package.sh
+      - name: Run package.sh to build Lambda ZIP
+        run: |
+          bash package.sh
 
-#       - name: Check Lambda zip exists
-#         run: |
-#           run: |
-#           ls -lh lambda.zip
-#           unzip -l lambda.zip
+      - name: Check Lambda zip exists
+        run: |
+          run: |
+          ls -lh lambda.zip
+          unzip -l lambda.zip
 
-#       - name: Validate Lambda ZIP
-#         run: |
-#           echo "Verifying lambda.zip..."
-#           ls -lh lambda.zip
-#           unzip -l lambda.zip
-#           file lambda.zip
+      - name: Validate Lambda ZIP
+        run: |
+          echo "Verifying lambda.zip..."
+          ls -lh lambda.zip
+          unzip -l lambda.zip
+          file lambda.zip
 
-#       - name: Terraform Init
-#         run: terraform init
+      - name: Terraform Init
+        run: terraform init
+              
+      - name: Import existing IAM role if it exists
+        run: |
+          terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "Role not found — skipping import"
 
-#       - name: Import existing IAM role if it exists
-#         run: |
-#           terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "Role not found — skipping import"
+      - name: Import existing Lambda function if it exists
+        run: |
+          terraform import aws_lambda_function.app my-node-app-local || echo "Lambda function not found — skipping import"
 
-#       - name: Import existing Lambda function if it exists
-#         run: |
-#           terraform import aws_lambda_function.app my-node-app-local || echo "Lambda function not found — skipping import"
-
-#       - name: Terraform Apply (local environment)
-#         run: terraform apply -var-file="local.tfvars" -auto-approve
-#         env:
-#           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+      - name: Terraform Apply (local environment)
+        run: terraform apply -var-file="local.tfvars" -auto-approve
+        env:
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
