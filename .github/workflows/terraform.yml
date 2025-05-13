@@ -51,6 +51,9 @@ jobs:
           run: |
           ls -lh lambda.zip
           unzip -l lambda.zip
+
+      - name: Inspect Lambda ZIP contents
+        run: unzip -l lambda.zip
       
       - name: Validate Lambda ZIP
         run: |
