@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-require('dotenv').config();
+
 const { saveUserToken, getUserToken } = require('./users');
 
 const app = express();

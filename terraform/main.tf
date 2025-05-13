@@ -91,20 +91,31 @@ resource "aws_lambda_permission" "apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
 }
+
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
-  # This ensures the deployment only happens after integration is ready
+  # Only trigger deployment when Lambda code changes
+  triggers = {
+    redeployment = sha1(jsonencode({
+      lambda_version = aws_lambda_function.app.source_code_hash
+    }))
+  }
+
   depends_on = [
     aws_api_gateway_integration.lambda
   ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
+
 resource "aws_api_gateway_stage" "stage" {
   stage_name    = var.environment
   rest_api_id   = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
-
 
 output "invoke_url" {
   description = "Public URL for the API"
