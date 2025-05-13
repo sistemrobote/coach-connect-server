@@ -97,8 +97,13 @@ app.get('/lastactivities', async (req, res) => {
         res.status(500).json({ error: err.toString() });
     }
 });
-const PORT = process.env.PORT || 5050;
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;
+
+// Local mode
+if (require.main === module) {
+    const PORT = process.env.PORT || 5050;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}

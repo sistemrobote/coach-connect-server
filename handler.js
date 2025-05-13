@@ -1,11 +1,4 @@
-exports.handler = async (event) => {
-    console.log("Received event:", JSON.stringify(event, null, 2));
+const serverlessExpress = require('@vendia/serverless-express');
+const app = require('./server');
 
-    return {
-        statusCode: 200,
-        body: JSON.stringify({
-            message: "Hello from Lambda!",
-            input: event,
-        }),
-    };
-};
+exports.handler = serverlessExpress({ app });
