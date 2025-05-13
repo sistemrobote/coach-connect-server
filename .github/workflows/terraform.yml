@@ -61,10 +61,14 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-
+              
       - name: Import existing IAM role if it exists
         run: |
           terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "Role not found — skipping import"
+
+      - name: Import existing Lambda function if it exists
+        run: |
+          terraform import aws_lambda_function.app my-node-app-local || echo "Lambda function not found — skipping import"
 
       - name: Terraform Apply (local environment)
         run: terraform apply -var-file="local.tfvars" -auto-approve
