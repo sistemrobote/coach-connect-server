@@ -15,11 +15,13 @@ const {
 } = process.env;
 
 app.get('/test', (req, res) => {
+    console.log(" Log from: '/test'",)
     res.status(200).send('API is working');
 });
 
 app.get('/auth/exchange_token', async (req, res) => {
     const { code } = req.query;
+    console.log(" code:", code)
     try {
         const response = await axios.post('https://www.strava.com/api/v3/oauth/token', {
             client_id: STRAVA_CLIENT_ID,
@@ -29,6 +31,7 @@ app.get('/auth/exchange_token', async (req, res) => {
         });
 
         const { access_token, refresh_token, expires_at, athlete } = response.data;
+        console.log(" response.data:", response.data)
         saveUserToken(athlete.id, { access_token, refresh_token, expires_at });
 
         res.redirect(`http://localhost:5173/activities?user_id=${athlete.id}`);
@@ -39,6 +42,7 @@ app.get('/auth/exchange_token', async (req, res) => {
 
 app.get('/activities', async (req, res) => {
     const userId = req.query.user_id;
+    console.log(" userId:", userId)
     const user = getUserToken(userId);
 
     if (!user) return res.status(404).json({ error: 'User not found' });
