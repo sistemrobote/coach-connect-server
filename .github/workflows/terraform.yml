@@ -48,8 +48,9 @@ jobs:
 
       - name: Check Lambda zip exists
         run: |
-          ls -lh terraform/lambda.zip
-          unzip -l terraform/lambda.zip
+          run: |
+          ls -lh lambda.zip
+          unzip -l lambda.zip
       
       - name: Validate Lambda ZIP
         run: |
