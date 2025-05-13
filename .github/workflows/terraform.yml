@@ -55,9 +55,9 @@ jobs:
       - name: Validate Lambda ZIP
         run: |
           echo "Verifying lambda.zip..."
-          ls -lh terraform/lambda.zip
-          unzip -l terraform/lambda.zip
-          file terraform/lambda.zip
+          ls -lh lambda.zip
+          unzip -l lambda.zip
+          file lambda.zip
 
       - name: Terraform Init
         run: terraform init
