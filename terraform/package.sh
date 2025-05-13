@@ -3,27 +3,19 @@
 set -e
 set -o pipefail
 
-# Constants
 ZIP_FILE="lambda.zip"
-ZIP_PATH="$(pwd)/$ZIP_FILE"
-ROOT_DIR="$(dirname "$(pwd)")"  # Assumes this script runs from terraform/
 
-# Clean up any existing ZIP
-[ -f "$ZIP_FILE" ] && rm "$ZIP_FILE"
+# Clean up old zip
+rm -f "$ZIP_FILE"
 
-# Validate required files
-if [ ! -f "$ROOT_DIR/handler.js" ]; then
-  echo "❌ Error: handler.js not found in $ROOT_DIR" >&2
-  exit 1
-fi
+# Check that expected files exist
+[ -f "../handler.js" ] || { echo "❌ handler.js is missing"; exit 1; }
+[ -d "../node_modules" ] || { echo "❌ node_modules is missing"; exit 1; }
 
-if [ ! -d "$ROOT_DIR/node_modules" ]; then
-  echo "❌ Error: node_modules not found in $ROOT_DIR" >&2
-  exit 1
-fi
+# Create ZIP from project root (one level up)
+cd ..
+zip -r terraform/$ZIP_FILE handler.js server.js users.js node_modules > /dev/null
+cd terraform
 
-# Build ZIP from repo root (handler.js + node_modules)
-zip -r "$ZIP_FILE" ../handler.js ../node_modules > /dev/null
-
-# Output only JSON for Terraform
+# Output JSON for Terraform
 echo "{\"zip_path\": \"$(pwd)/$ZIP_FILE\"}"
