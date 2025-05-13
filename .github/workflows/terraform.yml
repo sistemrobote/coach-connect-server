@@ -67,6 +67,6 @@ jobs:
           terraform import aws_iam_role.lambda_exec lambda_exec_role_test || true
 
       - name: Terraform Apply (local environment)
-        run: terraform apply -var-file="test.tfvars" -auto-approve
+        run: terraform apply
         env:
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
