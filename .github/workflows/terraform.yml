@@ -64,7 +64,14 @@ jobs:
           terraform import aws_lambda_function.app my-node-app-local || echo "Lambda function not found — skipping import"
 
       - name: Terraform Apply (local environment)
-        run: terraform apply -var-file="local.tfvars" -auto-approve
+        run: |
+          echo "Setting TF_VAR_env_vars"
+          export TF_VAR_env_vars=$(jq -n \
+            --arg client_id "${{ secrets.STRAVA_CLIENT_ID }}" \
+            --arg client_secret "${{ secrets.STRAVA_CLIENT_SECRET }}" \
+            '{STRAVA_CLIENT_ID: $client_id, STRAVA_CLIENT_SECRET: $client_secret}')
+          
+          echo "TF_VAR_env_vars = $TF_VAR_env_vars"
+          terraform apply -var-file="local.tfvars" -auto-approve
         env:
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-          TF_VAR_env_vars: '{"STRAVA_CLIENT_ID":"${{ secrets.STRAVA_CLIENT_ID }}","STRAVA_CLIENT_SECRET":"${{ secrets.STRAVA_CLIENT_SECRET }}"}'
