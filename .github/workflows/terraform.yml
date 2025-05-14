@@ -15,59 +15,59 @@ jobs:
         working-directory: terraform
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Terraform
+      - name: 🔧 Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
 
-      - name: Configure AWS credentials
+      - name: 🔐 Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
-      - name: Set up Node.js
+
+      - name: 🟢 Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22
 
-      - name: Install dependencies
+      - name: 📦 Install root dependencies
         run: npm ci
         working-directory: ./
 
-      - name: Install npm dependencies
+      - name: 📦 Install lambda dependencies
         run: npm ci
 
-      - name: Run package.sh to build Lambda ZIP
-        run: |
-          bash package.sh
+      - name: 🔨 Run package.sh to build Lambda ZIP
+        run: bash package.sh
 
-      - name: Terraform Init
+      - name: 🚀 Terraform Init
         run: terraform init
-              
-      - name: Import existing IAM role if it exists
-        run: |
-          terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "Role not found — skipping import"
 
-      - name: Import existing Lambda function if it exists
+      - name: 🛠 Import existing IAM role if it exists
         run: |
-          terraform import aws_lambda_function.app my-node-app-local || echo "Lambda function not found — skipping import"
-      
-      - name: (Optional) Destroy old permission
-        run: terraform destroy -target=aws_lambda_permission.apigw -auto-approve || true
+          terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "IAM Role not found — skipping"
 
-      - name: Terraform Apply (local environment)
+      - name: 🛠 Import existing Lambda function if it exists
+        run: |
+          terraform import aws_lambda_function.app my-node-app-local || echo "Lambda not found — skipping"
+
+      - name: 🛠 Import Lambda permission if it exists
+        run: |
+          terraform import aws_lambda_permission.apigw my-node-app-local/AllowAPIGatewayInvoke-local || echo "Lambda permission not found — skipping"
+
+      - name: ✅ Terraform Apply (local environment)
         run: |
           echo "Setting TF_VAR_env_vars"
           export TF_VAR_env_vars=$(jq -n \
             --arg client_id "${{ secrets.STRAVA_CLIENT_ID }}" \
             --arg client_secret "${{ secrets.STRAVA_CLIENT_SECRET }}" \
             '{STRAVA_CLIENT_ID: $client_id, STRAVA_CLIENT_SECRET: $client_secret}')
-          
+
           echo "TF_VAR_env_vars = $TF_VAR_env_vars"
           terraform apply -var-file="local.tfvars" -auto-approve
         env:
