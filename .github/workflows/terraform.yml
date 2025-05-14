@@ -60,6 +60,10 @@ jobs:
         run: |
           terraform import aws_lambda_permission.apigw my-node-app-local/AllowAPIGatewayInvoke-local || echo "Lambda permission not found — skipping"
 
+      - name: Import existing API Gateway if it exists
+        run: |
+          terraform import aws_api_gateway_rest_api.api je1gx4u3o8 || echo "API not found — skipping"
+
       - name: ✅ Terraform Apply (local environment)
         run: |
           echo "Setting TF_VAR_env_vars"
