@@ -64,6 +64,10 @@ jobs:
         run: |
           terraform import aws_api_gateway_rest_api.api je1gx4u3o8 || echo "API not found — skipping"
 
+      - name: 🛠 Import existing proxy resource if it exists
+        run: |
+          terraform import aws_api_gateway_resource.proxy je1gx4u3o8/8vmcnx || echo "Proxy resource not found — skipping"
+
       - name: ✅ Terraform Apply (local environment)
         run: |
           echo "Setting TF_VAR_env_vars"
