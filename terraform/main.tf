@@ -85,11 +85,15 @@ resource "aws_api_gateway_integration" "lambda" {
 }
 
 resource "aws_lambda_permission" "apigw" {
-  statement_id  = "AllowAPIGatewayInvoke-${timestamp()}"
+  statement_id = "AllowAPIGatewayInvoke-${formatdate("YYYYMMDDhhmmss", timestamp())}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.app.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
