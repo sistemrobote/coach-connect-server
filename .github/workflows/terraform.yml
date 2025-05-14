@@ -62,6 +62,9 @@ jobs:
       - name: Import existing Lambda function if it exists
         run: |
           terraform import aws_lambda_function.app my-node-app-local || echo "Lambda function not found — skipping import"
+      
+      - name: (Optional) Destroy old permission
+        run: terraform destroy -target=aws_lambda_permission.apigw -auto-approve || true
 
       - name: Terraform Apply (local environment)
         run: |
