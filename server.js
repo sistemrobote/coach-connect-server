@@ -15,7 +15,7 @@ const {
 } = process.env;
 
 app.get('/test', (req, res) => {
-    console.log(" Log from: '/test'",)
+    console.log(" Log from: '/test' !",)
     console.log(" STRAVA_CLIENT_ID:>>>", STRAVA_CLIENT_ID);
     res.status(200).send('API is working');
 });
