@@ -16,7 +16,10 @@ const {
 
 app.get('/test', (req, res) => {
     console.log("test STRAVA_CLIENT_ID:>>>>", process.env.STRAVA_CLIENT_ID);
-    res.status(200).send('API is working');
+    res.status(200).json({
+        STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
+        all_env: process.env
+    });
 });
 
 app.get('/auth/exchange_token', async (req, res) => {
