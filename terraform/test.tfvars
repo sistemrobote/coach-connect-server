@@ -1,5 +1,5 @@
-aws_region = "us-east-1"
 environment = "test"
+aws_region = "us-east-1"
 timeout     = 10
 memory_size = 128
 env_vars = {
