@@ -84,5 +84,8 @@ jobs:
             {
               "STRAVA_CLIENT_ID": "${{ secrets.STRAVA_CLIENT_ID }}",
               "STRAVA_CLIENT_SECRET": "${{ secrets.STRAVA_CLIENT_SECRET }}",
+              "NODE_ENV": "test",
+              "LOG_LEVEL": "info",
+              "API_KEY": "test-1234"
             }
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
