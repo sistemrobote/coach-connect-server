@@ -36,7 +36,7 @@ resource "aws_iam_role" "lambda_exec" {
 }
 
 resource "aws_iam_policy" "secrets_access" {
-  name        = "AllowLambdaSecretsAccess"
+  name        = "AllowLambdaSecretsAccess-${var.environment}"
   description = "Allow Lambda to access Strava secrets"
   policy = jsonencode({
     Version = "2012-10-17",
