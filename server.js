@@ -1,33 +1,36 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-
 const { saveUserToken, getUserToken } = require('./users');
+const { getStravaSecrets } = require('./secrets');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const {
-    STRAVA_CLIENT_ID,
-    STRAVA_CLIENT_SECRET,
     REDIRECT_URI
 } = process.env;
 
-app.get('/test', (req, res) => {
-    console.log("test STRAVA_CLIENT_ID:>>>>", process.env.STRAVA_CLIENT_ID);
-    res.status(200).json({
-        STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
-        all_env: process.env
-    });
+app.get('/test', async (req, res) => {
+    try {
+        const secrets = await getStravaSecrets();
+        res.status(200).json({
+            TEST: 'WORKs',
+            STRAVA_CLIENT_ID: secrets.STRAVA_CLIENT_ID,
+            STRAVA_CLIENT_SECRET: secrets.STRAVA_CLIENT_SECRET,
+            REDIRECT_URI: secrets.REDIRECT_URI
+        });
+    } catch (err) {
+        console.error('❌ Error in /test:', err);
+        res.status(500).json({ error: 'Failed to fetch secrets' });
+    }
 });
 
 app.get('/auth/exchange_token', async (req, res) => {
     const { code } = req.query;
     console.log(" code:>>>", code)
     try {
-        console.log(" STRAVA_CLIENT_ID:>>>", STRAVA_CLIENT_ID);
-        console.log(" STRAVA_CLIENT_SECRET:>>>", STRAVA_CLIENT_SECRET);
 
         const response = await axios.post('https://www.strava.com/api/v3/oauth/token', {
             client_id: STRAVA_CLIENT_ID,
