@@ -14,7 +14,7 @@ rm -f "$ZIP_FILE"
 
 # Create ZIP from project root (one level up)
 cd ..
-zip -r terraform/$ZIP_FILE handler.js server.js users.js node_modules > /dev/null
+zip -r terraform/$ZIP_FILE handler.js server.js secrets.js users.js node_modules > /dev/null
 cd terraform
 
 # Output JSON for Terraform
