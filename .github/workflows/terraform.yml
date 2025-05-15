@@ -76,9 +76,9 @@ jobs:
         run: |
           terraform import aws_api_gateway_method.proxy je1gx4u3o8/8vmcnx/ANY || echo "Method not found — skipping"
 
-      - name: ✅ Terraform Apply (test environment)
+      - name: ✅ Terraform Apply (local environment)
         run: |
-          terraform apply -var-file="test.tfvars" -auto-approve
+          terraform apply -var-file="local.tfvars" -auto-approve
         env:
           TF_VAR_env_vars: >-
             {
