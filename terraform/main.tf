@@ -14,6 +14,10 @@ data "external" "build_lambda" {
   program = ["bash", "${path.module}/package.sh"]
 }
 
+output "lambda_env_vars" {
+  value = aws_lambda_function.app.environment
+}
+
 ####################
 # IAM Role for Lambda
 ####################
