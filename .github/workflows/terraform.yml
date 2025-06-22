@@ -44,6 +44,14 @@ jobs:
       - name: 🚀 Terraform Init
         run: terraform init
 
+      - name: 🛠 Import existing IAM role if it exists
+        run: |
+          terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "IAM Role not found — skipping"
+
+      - name: 🛠 Import existing IAM policy if it exists
+        run: |
+          terraform import aws_iam_policy.secrets_access arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/AllowLambdaSecretsAccess-local || echo "IAM Policy not found — skipping"
+
       - name: ✅ Terraform Apply (local environment)
         run: terraform apply -var-file="local.tfvars" -auto-approve
         env:
