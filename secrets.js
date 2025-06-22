@@ -6,6 +6,7 @@ const secretsClient = new SecretsManagerClient({ region: process.env.AWS_REGION 
 let cachedSecrets = null;
 
 async function getStravaSecrets() {
+    console.log(" from secrets >:")
     if (cachedSecrets) return cachedSecrets;
     if (process.env.NODE_ENV === 'local') {
         cachedSecrets = {
@@ -16,7 +17,6 @@ async function getStravaSecrets() {
         return cachedSecrets;
     }
     try {
-        console.log(" from secrets >:")
         const command = new GetSecretValueCommand({ SecretId: 'coach-connect-secrets' });
         console.log(" command:", command)
         const response = await secretsClient.send(command);
