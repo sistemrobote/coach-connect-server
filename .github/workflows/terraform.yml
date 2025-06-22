@@ -35,50 +35,17 @@ jobs:
         with:
           node-version: 22
 
-      - name: 📦 Install root dependencies
-        run: npm ci
-        working-directory: ./
-
-      - name: 📦 Install lambda dependencies
+      - name: 📦 Install Lambda dependencies
         run: npm ci
 
-      - name: 🔨 Run package.sh to build Lambda ZIP
+      - name: 🔨 Build Lambda ZIP
         run: bash package.sh
 
       - name: 🚀 Terraform Init
         run: terraform init
 
-      - name: 🛠 Import existing IAM role if it exists
-        run: |
-          terraform import aws_iam_role.lambda_exec lambda_exec_role_local || echo "IAM Role not found — skipping"
-
-      - name: 🛠 Import existing Lambda function if it exists
-        run: |
-          terraform import aws_lambda_function.app my-node-app-local || echo "Lambda not found — skipping"
-
-      - name: 🛠 Import Lambda permission if it exists
-        run: |
-          terraform import aws_lambda_permission.apigw my-node-app-local/AllowAPIGatewayInvoke-local || echo "Lambda permission not found — skipping"
-
-      - name: Import existing API Gateway if it exists
-        run: |
-          terraform import aws_api_gateway_rest_api.api je1gx4u3o8 || echo "API not found — skipping"
-
-      - name: 🛠 Import existing API Gateway stage if it exists
-        run: |
-          terraform import aws_api_gateway_stage.stage je1gx4u3o8/local || echo "Stage not found — skipping"
-
-      - name: 🛠 Import existing proxy resource if it exists
-        run: |
-          terraform import aws_api_gateway_resource.proxy je1gx4u3o8/8vmcnx || echo "Proxy resource not found — skipping"
-
-      - name: 🛠 Import existing ANY method on {proxy+} if it exists
-        run: |
-          terraform import aws_api_gateway_method.proxy je1gx4u3o8/8vmcnx/ANY || echo "Method not found — skipping"
-
       - name: ✅ Terraform Apply (local environment)
-        run: |
-          terraform apply -var-file="local.tfvars" -auto-approve
+        run: terraform apply -var-file="local.tfvars" -auto-approve
         env:
           TF_VAR_env_vars: >-
             {

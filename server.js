@@ -2,15 +2,11 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const { saveUserToken, getUserToken } = require('./users');
-const { getStravaSecrets } = require('./secrets');
+const { getStravaSecrets } = require('./secrets'); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const {
-    REDIRECT_URI
-} = process.env;
 
 app.get('/test', async (req, res) => {
     try {
@@ -29,7 +25,7 @@ app.get('/test', async (req, res) => {
 
 app.get('/auth/exchange_token', async (req, res) => {
     const { code } = req.query;
-    console.log(" code:>>>", code)
+
     try {
 
         const response = await axios.post('https://www.strava.com/api/v3/oauth/token', {
@@ -51,17 +47,18 @@ app.get('/auth/exchange_token', async (req, res) => {
 
 app.get('/activities', async (req, res) => {
     const userId = req.query.user_id;
-    console.log(" userId:", userId)
+    const before = req.query.before;
+    const after = req.query.after;
     const user = getUserToken(userId);
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Optional: refresh token if expired
+    // Refresh token if expired
     if (Date.now() / 1000 >= user.expires_at) {
         try {
             const refreshResponse = await axios.post('https://www.strava.com/api/v3/oauth/token', {
-                client_id: STRAVA_CLIENT_ID,
-                client_secret: STRAVA_CLIENT_SECRET,
+                client_id: process.env.STRAVA_CLIENT_ID,
+                client_secret: process.env.STRAVA_CLIENT_SECRET,
                 grant_type: 'refresh_token',
                 refresh_token: user.refresh_token,
             });
@@ -79,7 +76,7 @@ app.get('/activities', async (req, res) => {
 
     try {
         const updatedUser = getUserToken(userId);
-        const activities = await axios.get('https://www.strava.com/api/v3/athlete/activities?per_page=4', {
+        const activities = await axios.get(`https://www.strava.com/api/v3/athlete/activities?after=${after}&before=${before}`, {
             headers: { Authorization: `Bearer ${updatedUser.access_token}` },
         });
 
@@ -88,21 +85,34 @@ app.get('/activities', async (req, res) => {
         res.status(500).json({ error: err.toString() });
     }
 });
-app.get('/lastactivities', async (req, res) => {
-
+app.get('/athletes/stats', async (req, res) => {
     const userId = req.query.user_id;
     const user = getUserToken(userId);
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // Refresh token if expired
+    if (Date.now() / 1000 >= user.expires_at) {
+        try {
+            const refreshResponse = await axios.post('https://www.strava.com/api/v3/oauth/token', {
+                client_id: process.env.STRAVA_CLIENT_ID,
+                client_secret: process.env.STRAVA_CLIENT_SECRET,
+                grant_type: 'refresh_token',
+                refresh_token: user.refresh_token,
+            });
+
+            const updated = refreshResponse.data;
+            saveUserToken(userId, {
+                access_token: updated.access_token,
+                refresh_token: updated.refresh_token,
+                expires_at: updated.expires_at
+            });
+        } catch (err) {
+            return res.status(500).json({ error: 'Token refresh failed' });
+        }
+    }
     try {
-        const oneWeekAgoEpoch = () => {
-            const now = new Date();
-            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days in ms
-            return Math.floor(oneWeekAgo.getTime() / 1000); // convert to seconds
-        };
-        const weekAgo = oneWeekAgoEpoch()
-        const activities = await axios.get(`https://www.strava.com/api/v3/athlete/activities?after=${weekAgo}`, {
+        const activities = await axios.get(`https://www.strava.com/api/v3/athletes/${userId}/stats`, {
             headers: { Authorization: `Bearer ${user.access_token}` },
         });
         res.json(activities.data);
