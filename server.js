@@ -11,6 +11,7 @@ app.use(express.json());
 app.get('/test', async (req, res) => {
     try {
         const secrets = await getStravaSecrets();
+        console.log(" secrets:>>>", secrets)
         res.status(200).json({
             TEST: 'WORKs',
             STRAVA_CLIENT_ID: secrets.STRAVA_CLIENT_ID,
