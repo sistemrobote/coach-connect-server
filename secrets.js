@@ -16,6 +16,7 @@ async function getStravaSecrets() {
         return cachedSecrets;
     }
     try {
+        console.log(" from secrets >:")
         const command = new GetSecretValueCommand({ SecretId: 'coach-connect-secrets' });
         console.log(" command:", command)
         const response = await secretsClient.send(command);

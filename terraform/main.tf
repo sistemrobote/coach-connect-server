@@ -84,8 +84,8 @@ resource "aws_lambda_function" "app" {
 # API Gateway Setup
 ####################
 resource "aws_api_gateway_rest_api" "api" {
-  name        = "my-api-${var.environment}"
-  description = "API Gateway for Node.js Lambda (${var.environment})"
+  name        = "my-api-prod"
+  description = "API Gateway for Node.js Lambda (prod)"
 }
 
 resource "aws_api_gateway_resource" "proxy" {
@@ -131,7 +131,7 @@ resource "aws_api_gateway_deployment" "deployment" {
 }
 
 resource "aws_api_gateway_stage" "stage" {
-  stage_name    = var.environment
+  stage_name    = prod
   rest_api_id   = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
