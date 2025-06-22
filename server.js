@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -28,10 +29,10 @@ app.get('/auth/exchange_token', async (req, res) => {
     const { code } = req.query;
 
     try {
-
+        const secrets = await getStravaSecrets();
         const response = await axios.post('https://www.strava.com/api/v3/oauth/token', {
-            client_id: STRAVA_CLIENT_ID,
-            client_secret: STRAVA_CLIENT_SECRET,
+            client_id: secrets.STRAVA_CLIENT_ID,
+            client_secret: secrets.STRAVA_CLIENT_SECRET,
             code,
             grant_type: 'authorization_code',
         });
@@ -57,9 +58,10 @@ app.get('/activities', async (req, res) => {
     // Refresh token if expired
     if (Date.now() / 1000 >= user.expires_at) {
         try {
+            const secrets = await getStravaSecrets();
             const refreshResponse = await axios.post('https://www.strava.com/api/v3/oauth/token', {
-                client_id: process.env.STRAVA_CLIENT_ID,
-                client_secret: process.env.STRAVA_CLIENT_SECRET,
+                client_id: secrets.STRAVA_CLIENT_ID,
+                client_secret: secrets.STRAVA_CLIENT_SECRET,
                 grant_type: 'refresh_token',
                 refresh_token: user.refresh_token,
             });
@@ -95,9 +97,11 @@ app.get('/athletes/stats', async (req, res) => {
     // Refresh token if expired
     if (Date.now() / 1000 >= user.expires_at) {
         try {
+            const secrets = await getStravaSecrets();
+
             const refreshResponse = await axios.post('https://www.strava.com/api/v3/oauth/token', {
-                client_id: process.env.STRAVA_CLIENT_ID,
-                client_secret: process.env.STRAVA_CLIENT_SECRET,
+                client_id: secrets.STRAVA_CLIENT_ID,
+                client_secret: secrets.STRAVA_CLIENT_SECRET,
                 grant_type: 'refresh_token',
                 refresh_token: user.refresh_token,
             });
