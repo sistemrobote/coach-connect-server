@@ -41,7 +41,7 @@ app.get('/auth/exchange_token', async (req, res) => {
         console.log(" response.data:", response.data)
         saveUserToken(athlete.id, { access_token, refresh_token, expires_at });
 
-        res.redirect(`http://localhost:5173/activities?user_id=${athlete.id}`);
+        res.redirect(`https://dzg90nkkg0y7c.cloudfront.net/activities?user_id=${athlete.id}`);
     } catch (err) {
         res.status(500).json({ error: err.toString() });
     }
