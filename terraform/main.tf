@@ -4,7 +4,7 @@ provider "aws" {
 
 variable "environment" {
   description = "Deployment environment (local, test, prod)"
-  default     = "local"
+  default     = "prod"
 }
 
 ####################
