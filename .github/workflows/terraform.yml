@@ -53,6 +53,14 @@ jobs:
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           terraform import aws_iam_policy.secrets_access arn:aws:iam::${ACCOUNT_ID}:policy/AllowLambdaSecretsAccess-local || echo "IAM Policy not found — skipping"
 
+      - name: 🛠 Import existing Lambda function if it exists
+        run: |
+          if aws lambda get-function --function-name my-node-app-local; then
+            terraform import aws_lambda_function.app my-node-app-local
+          else
+            echo "Lambda not found — skipping"
+          fi
+
       - name: ✅ Terraform Apply (local environment)
         run: terraform apply -var-file="local.tfvars" -auto-approve
         env:
