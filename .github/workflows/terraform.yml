@@ -60,6 +60,17 @@ jobs:
           else
             echo "Lambda not found — skipping"
           fi
+      - name: 🛠 Import existing Lambda permission if it exists
+        run: |
+          # Check if the statement ID exists on the Lambda policy
+          set -e
+          POLICY=$(aws lambda get-policy --function-name my-node-app-local --query 'Policy' --output text || true)
+          if echo "$POLICY" | grep -q '"Sid":"AllowAPIGatewayInvoke-local"'; then
+            terraform import aws_lambda_permission.apigw my-node-app-local/AllowAPIGatewayInvoke-local
+            echo "Permission imported"
+          else
+            echo "Lambda permission not found — skipping import"
+          fi
 
       - name: ✅ Terraform Apply (local environment)
         run: terraform apply -var-file="local.tfvars" -auto-approve
