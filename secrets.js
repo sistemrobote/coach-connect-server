@@ -6,15 +6,14 @@ const secretsClient = new SecretsManagerClient({ region: process.env.AWS_REGION 
 
 async function getStravaSecrets() {
     console.log(" process.env.NODE_ENV:", process.env.NODE_ENV)
-    if ((process?.env?.NODE_ENV && process.env.NODE_ENV) === 'local') {
+    if (process.env.NODE_ENV === 'local') {
         let cachedSecrets = {
             STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
             STRAVA_CLIENT_SECRET: process.env.STRAVA_CLIENT_SECRET,
             REDIRECT_URI: process.env.REDIRECT_URI,
         };
         return cachedSecrets;
-    }
-    try {
+    } else {
         console.log(" from secrets >:")
         const command = new GetSecretValueCommand({ SecretId: 'coach-connect-secrets' });
         const response = await secretsClient.send(command);
@@ -23,10 +22,7 @@ async function getStravaSecrets() {
         }
         let cachedSecrets = JSON.parse(response.SecretString);
         return cachedSecrets;
-    } catch (error) {
-        console.error('❌ Failed to fetch secrets from Secrets Manager:', error);
-        throw error;
-    }
+    } 
 }
 
 module.exports = { getStravaSecrets };
