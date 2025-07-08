@@ -13,7 +13,6 @@ app.get("/test", async (req, res) => {
   console.log(" from test :>>>");
   try {
     const secrets = await getStravaSecrets();
-    console.log(" secrets:>>>", secrets);
     res.status(200).json({
       TEST: "WORKs",
       STRAVA_CLIENT_ID: secrets.STRAVA_CLIENT_ID,
