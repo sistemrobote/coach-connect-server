@@ -51,29 +51,10 @@ resource "aws_iam_policy" "secrets_access" {
     ]
   })
 }
-resource "aws_iam_policy" "secrets_access_local" {
-  name        = "AllowLambdaSecretsAccess-local"
-  description = "Allow Lambda to access coach-connect-secrets"
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect: "Allow",
-        Action: [
-          "secretsmanager:GetSecretValue"
-        ],
-        Resource: "arn:aws:secretsmanager:us-east-1:*:secret:coach-connect-secrets*"
-      }
-    ]
-  })
-}
+
 resource "aws_iam_role_policy_attachment" "lambda_secrets_policy" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = aws_iam_policy.secrets_access.arn
-}
-resource "aws_iam_role_policy_attachment" "lambda_secrets_policy_local" {
-  role       = aws_iam_role.lambda_exec_local.name # or your role resource name
-  policy_arn = aws_iam_policy.secrets_access_local.arn
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
