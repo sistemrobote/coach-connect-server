@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/test", async (req, res) => {
+  console.log(" from test :>>>");
   try {
     const secrets = await getStravaSecrets();
     console.log(" secrets:>>>", secrets);
@@ -35,7 +36,7 @@ app.get("/auth/exchange_token", async (req, res) => {
       {
         client_id: secrets.STRAVA_CLIENT_ID,
         client_secret: secrets.STRAVA_CLIENT_SECRET,
-        code,
+        code: code,
         grant_type: "authorization_code",
       }
     );

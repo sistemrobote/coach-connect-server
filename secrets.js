@@ -9,15 +9,15 @@ const secretsClient = new SecretsManagerClient({
 });
 
 async function getStravaSecrets() {
-  console.log(" process.env.NODE_ENV:", process.env.NODE_ENV);
+  console.log(" process.env.NODE_ENV:>>", process.env.NODE_ENV);
   //* Uncomment this code to run locally
-  // if (process.env.NODE_ENV === 'local') {
-  //     let cachedSecrets = {
-  //         STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
-  //         STRAVA_CLIENT_SECRET: process.env.STRAVA_CLIENT_SECRET,
-  //         REDIRECT_URI: process.env.REDIRECT_URI,
-  //     };
-  //     return cachedSecrets;
+  // if (process.env.NODE_ENV === "local") {
+  //   let cachedSecrets = {
+  //     STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
+  //     STRAVA_CLIENT_SECRET: process.env.STRAVA_CLIENT_SECRET,
+  //     REDIRECT_URI: process.env.REDIRECT_URI,
+  //   };
+  //   return cachedSecrets;
   // } else {
   const command = new GetSecretValueCommand({
     SecretId: "coach-connect-secrets",
@@ -26,9 +26,10 @@ async function getStravaSecrets() {
   if (!response.SecretString) {
     throw new Error("SecretString missing in Secrets Manager response");
   }
+  console.log(" response.SecretString:>>", response.SecretString);
   let cachedSecrets = JSON.parse(response.SecretString);
   return cachedSecrets;
-  // }
 }
+// }
 
 module.exports = { getStravaSecrets };
