@@ -1,82 +1,100 @@
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
+const {
+  DynamoDBClient,
+  PutItemCommand,
+  GetItemCommand,
+  DeleteItemCommand,
+  ScanCommand,
+} = require("@aws-sdk/client-dynamodb");
 
-const db = new sqlite3.Database(path.join(__dirname, "tokens.db"));
+const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+const TABLE_NAME = "user_tokens";
 
-// Create table if it doesn't exist
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_tokens (
-      user_id TEXT PRIMARY KEY,
-      access_token TEXT,
-      refresh_token TEXT,
-      expires_at INTEGER
-    )
-  `);
-});
+/**
+ * Save or update a user's tokens. If tokens is null, remove the user.
+ */
+const saveUserToken = async (userId, tokens) => {
+  const id = String(userId);
+
+  if (tokens == null) {
+    // Delete user
+    try {
+      await client.send(
+        new DeleteItemCommand({
+          TableName: TABLE_NAME,
+          Key: { user_id: { S: id } },
+        })
+      );
+      console.log(`[saveUserToken] Removed user ${id}`);
+    } catch (err) {
+      console.log(`[saveUserToken] Error removing user ${id}:`, err);
+    }
+    return;
+  }
+
+  // Put (upsert) user
+  const params = {
+    TableName: TABLE_NAME,
+    Item: {
+      user_id: { S: id },
+      access_token: { S: tokens.access_token },
+      refresh_token: { S: tokens.refresh_token },
+      expires_at: { N: String(tokens.expires_at) },
+    },
+  };
+  try {
+    await client.send(new PutItemCommand(params));
+    console.log(`[saveUserToken] Stored user ${id}`);
+  } catch (err) {
+    console.log(`[saveUserToken] Error storing user ${id}:`, err);
+  }
+};
+
+/**
+ * Get a user's tokens by userId.
+ * Returns { access_token, refresh_token, expires_at } or null if not found.
+ */
+const getUserToken = async (userId) => {
+  const id = String(userId);
+  console.log(`[getUserToken] Getting user ${id}`);
+  const params = {
+    TableName: TABLE_NAME,
+    Key: { user_id: { S: id } },
+  };
+
+  try {
+    const { Item } = await client.send(new GetItemCommand(params));
+    if (!Item) return null;
+    return {
+      access_token: Item.access_token.S,
+      refresh_token: Item.refresh_token.S,
+      expires_at: Number(Item.expires_at.N),
+    };
+  } catch (err) {
+    console.log(`[getUserToken] Error getting user ${id}:`, err);
+    return null;
+  }
+};
+
+/**
+ * Get a list of all user_ids in the table.
+ * Returns an array of user_id strings.
+ */
+const getAllUsers = async () => {
+  const params = {
+    TableName: TABLE_NAME,
+    ProjectionExpression: "user_id",
+  };
+  try {
+    const result = await client.send(new ScanCommand(params));
+    return (result.Items || []).map((item) => item.user_id.S);
+  } catch (err) {
+    console.log("[getAllUsers] Error scanning users:", err);
+    return [];
+  }
+};
 
 module.exports = {
-  saveUserToken: (userId, tokens) => {
-    const id = String(userId);
-    if (tokens == null) {
-      db.run(`DELETE FROM user_tokens WHERE user_id = ?`, [id], function (err) {
-        if (err) console.log(`[saveUserToken] Error removing user ${id}:`, err);
-        else console.log(`[saveUserToken] Removed user ${id}`);
-      });
-    } else {
-      db.run(
-        `
-        INSERT INTO user_tokens (user_id, access_token, refresh_token, expires_at)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(user_id) DO UPDATE SET
-          access_token = excluded.access_token,
-          refresh_token = excluded.refresh_token,
-          expires_at = excluded.expires_at
-        `,
-        [id, tokens.access_token, tokens.refresh_token, tokens.expires_at],
-        function (err) {
-          if (err)
-            console.log(`[saveUserToken] Error storing user ${id}:`, err);
-          else console.log(`[saveUserToken] Stored user ${id}`);
-        }
-      );
-    }
-  },
-
-  getUserToken: (userId) => {
-    const id = String(userId);
-    console.log(`[getUserToken] Getting user ${id}`);
-    return new Promise((resolve, reject) => {
-      db.get(
-        `SELECT * FROM user_tokens WHERE user_id = ?`,
-        [id],
-        (err, row) => {
-          if (err) {
-            reject(err);
-          } else {
-            if (!row) return resolve(null);
-            // row: { user_id, access_token, refresh_token, expires_at }
-            // to match old API, return just the token fields
-            resolve({
-              access_token: row.access_token,
-              refresh_token: row.refresh_token,
-              expires_at: row.expires_at,
-            });
-          }
-        }
-      );
-    });
-  },
-
-  getAllUsers: () => {
-    return new Promise((resolve, reject) => {
-      db.all(`SELECT user_id FROM user_tokens`, [], (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows.map((r) => r.user_id));
-        }
-      });
-    });
-  },
+  saveUserToken,
+  getUserToken,
+  getAllUsers,
 };

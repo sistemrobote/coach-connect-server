@@ -43,7 +43,11 @@ app.get("/auth/exchange_token", async (req, res) => {
 
     const { access_token, refresh_token, expires_at, athlete } = response.data;
     console.log(" response.data:", response.data);
-    saveUserToken(athlete.id, { access_token, refresh_token, expires_at });
+    await saveUserToken(athlete.id, {
+      access_token,
+      refresh_token,
+      expires_at,
+    });
 
     res.redirect(`${secrets.REDIRECT_URI}/activities?user_id=${athlete.id}`);
   } catch (err) {
@@ -75,7 +79,7 @@ app.get("/activities", async (req, res) => {
       );
 
       const updated = refreshResponse.data;
-      saveUserToken(userId, {
+      await saveUserToken(userId, {
         access_token: updated.access_token,
         refresh_token: updated.refresh_token,
         expires_at: updated.expires_at,
@@ -160,7 +164,7 @@ app.delete("/auth/invalidate_token", async (req, res) => {
   }
 
   // Remove from your local storage (adjust depending on your implementation)
-  saveUserToken(userId, null);
+  await saveUserToken(userId, null);
 
   res.json({ success: true, message: "Token invalidated" });
 });
