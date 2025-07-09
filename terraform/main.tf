@@ -33,6 +33,10 @@ resource "aws_iam_policy" "lambda_secrets" {
 
 data "aws_caller_identity" "current" {}
 
+data "external" "build_lambda" {
+  program = ["bash", "${path.module}/package.sh"]
+}
+
 # Attach permissions to Lambda role
 resource "aws_iam_role_policy_attachment" "secrets" {
   role       = aws_iam_role.lambda_exec.name
