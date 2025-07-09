@@ -19,3 +19,13 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
+variable "environment" {
+  description = "Deployment environment: local or prod"
+  type        = string
+  default     = "prod"
+}
+variable "secret_name" {
+  description = "Name of the AWS SecretsManager secret"
+  type        = string
+  default     = "coach-connect-secrets" # <<<<< Update if needed!
+}
