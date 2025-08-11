@@ -1,0 +1,64 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual deployment
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup AWS SAM CLI
+      uses: aws-actions/setup-sam@v2
+      with:
+        use-installer: true
+        
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Build SAM application
+      run: sam build
+      
+    - name: Deploy to AWS
+      run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      
+    - name: Get API URL
+      id: get-url
+      run: |
+        API_URL=$(aws cloudformation describe-stacks --stack-name strava-connect-server --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' --output text)
+        echo "API_URL=$API_URL" >> $GITHUB_OUTPUT
+        echo "✅ Deployed successfully!"
+        echo "🌐 API Gateway URL: $API_URL"
+        
+    - name: Comment PR with deployment info
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `✅ **Deployment Complete**\n\n🌐 **API URL:** ${{ steps.get-url.outputs.API_URL }}\n\n*This URL remains stable across all deployments.*`
+          })

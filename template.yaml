@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Strava Connect Server - OAuth proxy for Strava API
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues: [local, prod]
+  SecretName:
+    Type: String
+    Default: coach-connect-secrets
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        NODE_ENV: !Ref Environment
+
+Resources:
+  # Lambda function
+  StravaConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'strava-connect-${Environment}'
+      CodeUri: ./
+      Handler: handler.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: user_tokens
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretName}*'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StravaConnectApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # API Gateway with fixed name (prevents URL changes)
+  StravaConnectApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'strava-connect-api-${Environment}'
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+
+Outputs:
+  ApiUrl:
+    Description: 'API Gateway endpoint URL'
+    Value: !Sub 'https://${StravaConnectApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiUrl'
+  
+  FunctionName:
+    Description: 'Lambda Function Name'
+    Value: !Ref StravaConnectFunction
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionName'
