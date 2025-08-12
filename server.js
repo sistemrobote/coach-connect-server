@@ -91,7 +91,7 @@ app.get("/activities", async (req, res) => {
   try {
     const updatedUser = await getUserToken(userId);
     const activities = await axios.get(
-      `https://www.strava.com/api/v3/athlete/activities?after=${after}&before=${before}`,
+      `https://www.strava.com/api/v3/athlete/activities?after=${after}&before=${before}&per_page=200`,
       {
         headers: { Authorization: `Bearer ${updatedUser.access_token}` },
       }
