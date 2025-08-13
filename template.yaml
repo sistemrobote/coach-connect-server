@@ -29,12 +29,27 @@ Resources:
       CodeUri: ./
       Handler: handler.handler
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: user_tokens
-        - DynamoDBCrudPolicy:
-            TableName: user_profiles
         - Version: '2012-10-17'
           Statement:
+            # DynamoDB permissions for both tables
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:DeleteItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+                - dynamodb:BatchWriteItem
+                - dynamodb:BatchGetItem
+                - dynamodb:DescribeTable
+                - dynamodb:ConditionCheckItem
+              Resource:
+                - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/user_tokens'
+                - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/user_tokens/index/*'
+                - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/user_profiles'
+                - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/user_profiles/index/*'
+            # Secrets Manager permissions
             - Effect: Allow
               Action:
                 - secretsmanager:GetSecretValue
