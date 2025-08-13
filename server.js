@@ -121,11 +121,12 @@ app.get("/auth/exchange_token", async (req, res) => {
     // Create JWT for application authentication
     const jwtToken = createUserJWT(athlete, { scope });
 
+    console.log(" ~~~ process.env.NODE_ENV>>", process.env.NODE_ENV);
     // Set secure HTTP-only cookie with JWT
     res.cookie("auth_token", jwtToken, {
       httpOnly: true, // Prevent XSS access
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: "/", // Available site-wide
     });
@@ -460,7 +461,7 @@ app.post("/auth/refresh", authenticateJWT, async (req, res) => {
     res.cookie("auth_token", newJWT, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
