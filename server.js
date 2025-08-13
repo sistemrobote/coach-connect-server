@@ -18,10 +18,29 @@ const { createUserJWT, authenticateJWT, optionalAuth } = require("./auth");
 
 const app = express();
 
-// Enhanced CORS configuration for cookies
+// Dynamic CORS configuration that fetches REDIRECT_URI from secrets
 app.use(
   cors({
-    origin: [process.env.REDIRECT_URI, "http://localhost:5173"].filter(Boolean),
+    origin: async (origin, callback) => {
+      try {
+        if (!origin) return callback(null, true);
+
+        const secrets = await getStravaSecrets();
+        const allowedOrigins = [
+          secrets.REDIRECT_URI,
+          "http://localhost:5173",
+        ].filter(Boolean);
+
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.warn(`[CORS] Blocked origin: ${origin}`);
+          callback(new Error("Not allowed by CORS"));
+        }
+      } catch (error) {
+        console.error("[CORS] Error fetching secrets:", error);
+      }
+    },
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
