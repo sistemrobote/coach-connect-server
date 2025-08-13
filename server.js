@@ -39,6 +39,13 @@ app.use(
         }
       } catch (error) {
         console.error("[CORS] Error fetching secrets:", error);
+        // Fallback to localhost in case of error
+        const fallbackOrigins = ["http://localhost:5173"];
+        if (fallbackOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("CORS configuration error"));
+        }
       }
     },
     credentials: true, // Allow cookies to be sent
@@ -118,7 +125,7 @@ app.get("/auth/exchange_token", async (req, res) => {
     res.cookie("auth_token", jwtToken, {
       httpOnly: true, // Prevent XSS access
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "strict", // CSRF protection
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: "/", // Available site-wide
     });
@@ -382,7 +389,7 @@ app.post("/auth/logout", optionalAuth, async (req, res) => {
     res.clearCookie("auth_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       path: "/",
     });
 
@@ -453,7 +460,7 @@ app.post("/auth/refresh", authenticateJWT, async (req, res) => {
     res.cookie("auth_token", newJWT, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -618,7 +625,7 @@ app.delete("/user/account", authenticateJWT, async (req, res) => {
     res.clearCookie("auth_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       path: "/",
     });
 

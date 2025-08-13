@@ -90,6 +90,11 @@ const verifyJWT = (token) => {
 const authenticateJWT = (req, res, next) => {
   let token = null;
 
+  // Debug: Log all cookies and headers
+  console.log("[authenticateJWT] All cookies:", req.cookies);
+  console.log("[authenticateJWT] Authorization header:", req.headers.authorization);
+  console.log("[authenticateJWT] Origin:", req.headers.origin);
+
   // Try to get token from cookie first (more secure)
   if (req.cookies && req.cookies.auth_token) {
     token = req.cookies.auth_token;
