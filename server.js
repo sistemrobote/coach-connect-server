@@ -21,7 +21,7 @@ const app = express();
 // Enhanced CORS configuration for cookies
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, "http://localhost:5173"].filter(Boolean),
+    origin: [process.env.REDIRECT_URI, "http://localhost:5173"].filter(Boolean),
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
