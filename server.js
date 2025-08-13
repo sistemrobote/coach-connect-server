@@ -123,7 +123,7 @@ app.get("/auth/exchange_token", async (req, res) => {
     );
     res.status(500).json({
       error: "Authentication failed",
-      message: "Unable to complete Strava authentication",
+      message: "Unable to complete Strava authentication", //!
     });
   }
 });

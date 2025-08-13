@@ -31,6 +31,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: user_tokens
+        - DynamoDBCrudPolicy:
+            TableName: user_profiles
         - Version: '2012-10-17'
           Statement:
             - Effect: Allow
