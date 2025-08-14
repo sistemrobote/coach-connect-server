@@ -71,6 +71,22 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/test", async (req, res) => {
+  console.log(" from test :>>>");
+  try {
+    const secrets = await getStravaSecrets();
+    res.status(200).json({
+      TEST: "WORKs",
+      STRAVA_CLIENT_ID: secrets.STRAVA_CLIENT_ID,
+      STRAVA_CLIENT_SECRET: secrets.STRAVA_CLIENT_SECRET,
+      REDIRECT_URI: secrets.REDIRECT_URI,
+    });
+  } catch (err) {
+    console.error("❌ Error in /test:", err);
+    res.status(500).json({ error: "Failed to fetch secrets" });
+  }
+});
+
 // AUTH USER HERE!
 app.get("/auth/exchange_token", async (req, res) => {
   const { code } = req.query;
