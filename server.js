@@ -72,7 +72,6 @@ app.use((req, res, next) => {
 });
 
 app.get("/test", async (req, res) => {
-  console.log(" from test :>>>");
   try {
     const secrets = await getStravaSecrets();
     res.status(200).json({
@@ -112,7 +111,6 @@ app.get("/auth/exchange_token", async (req, res) => {
     const { access_token, refresh_token, expires_at, athlete, scope } =
       response.data;
     console.log(`[OAuth] Successfully authenticated user ${athlete.id}`);
-    console.log("🚀 ~ athlete>>", athlete);
 
     // Save enhanced user profile and tokens
     await saveUserProfile(
@@ -137,7 +135,6 @@ app.get("/auth/exchange_token", async (req, res) => {
     // Create JWT for application authentication
     const jwtToken = createUserJWT(athlete, { scope });
 
-    console.log(" ~~~ process.env.NODE_ENV>>", process.env.NODE_ENV);
     // Set secure HTTP-only cookie with JWT
     res.cookie("auth_token", jwtToken, {
       httpOnly: true, // Prevent XSS access
@@ -351,7 +348,6 @@ app.get("/athletes/stats", authenticateJWT, async (req, res) => {
 });
 
 app.delete("/auth/invalidate_token", async (req, res) => {
-  console.log(" /auth/invalidate_token:");
   const userId = req.query.user_id;
   const user = await getUserToken(userId);
 
