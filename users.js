@@ -401,6 +401,150 @@ const deleteUserData = async (userId) => {
   }
 };
 
+/**
+ * Save a custom workout for a user
+ * @param {string} userId - User ID
+ * @param {Object} workoutData - Workout data
+ * @returns {Object|null} Created workout with ID or null if failed
+ */
+const saveWorkout = async (userId, workoutData) => {
+  const id = String(userId);
+  const workoutId = `workout_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2, 11)}`;
+  const now = Date.now();
+
+  try {
+    const workout = {
+      PK: `USER#${id}`,
+      SK: `WORKOUT#${workoutId}`,
+      entity_type: "USER_WORKOUT",
+      user_id: id,
+      workout_id: workoutId,
+
+      // Workout details
+      name: workoutData.name,
+      description: workoutData.description || "",
+      duration: workoutData.duration || 0,
+      difficulty: workoutData.difficulty || "medium",
+      count: workoutData.count || [],
+
+      // Metadata
+      created_at: workoutData.workoutDate || now, // Use passed date or current time
+      updated_at: now,
+    };
+
+    await client.send(
+      new PutItemCommand({
+        TableName: TABLE_NAME,
+        Item: toDynamoDBItem(workout),
+      })
+    );
+
+    console.log(`[saveWorkout] Saved workout ${workoutId} for user ${id}`);
+    return {
+      id: workoutId,
+      name: workout.name,
+      description: workout.description,
+      duration: workout.duration,
+      difficulty: workout.difficulty,
+      count: workout.count,
+      date: new Date(workout.created_at).toISOString(), // Add readable date
+      created_at: workout.created_at,
+      updated_at: workout.updated_at,
+    };
+  } catch (error) {
+    console.error(`[saveWorkout] Error saving workout for user ${id}:`, error);
+    return null;
+  }
+};
+
+/**
+ * Get all workouts for a user
+ * @param {string} userId - User ID
+ * @returns {Array} Array of user workouts
+ */
+const getUserWorkouts = async (userId) => {
+  const id = String(userId);
+
+  try {
+    const { Items } = await client.send(
+      new QueryCommand({
+        TableName: TABLE_NAME,
+        KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk_prefix)",
+        ExpressionAttributeValues: {
+          ":pk": { S: `USER#${id}` },
+          ":sk_prefix": { S: "WORKOUT#" },
+        },
+      })
+    );
+
+    if (!Items || Items.length === 0) {
+      console.log(`[getUserWorkouts] No workouts found for user ${id}`);
+      return [];
+    }
+
+    const workouts = Items.map((item) => {
+      const workout = fromDynamoDBItem(item);
+      return {
+        id: workout.workout_id,
+        name: workout.name,
+        description: workout.description,
+        duration: workout.duration,
+        difficulty: workout.difficulty,
+        count: workout.count,
+        date: new Date(workout.created_at).toISOString(), // Add readable date
+        created_at: workout.created_at,
+        updated_at: workout.updated_at,
+      };
+    }).sort((a, b) => b.created_at - a.created_at); // Most recent first
+
+    console.log(
+      `[getUserWorkouts] Retrieved ${workouts.length} workouts for user ${id}`
+    );
+    return workouts;
+  } catch (error) {
+    console.error(
+      `[getUserWorkouts] Error getting workouts for user ${id}:`,
+      error
+    );
+    return [];
+  }
+};
+
+/**
+ * Delete a specific workout for a user
+ * @param {string} userId - User ID
+ * @param {string} workoutId - Workout ID
+ * @returns {boolean} Success status
+ */
+const deleteUserWorkout = async (userId, workoutId) => {
+  const id = String(userId);
+
+  try {
+    await client.send(
+      new DeleteItemCommand({
+        TableName: TABLE_NAME,
+        Key: {
+          PK: { S: `USER#${id}` },
+          SK: { S: `WORKOUT#${workoutId}` },
+        },
+      })
+    );
+
+    console.log(
+      `[deleteUserWorkout] Deleted workout ${workoutId} for user ${id}`
+    );
+    return true;
+  } catch (error) {
+    console.error(
+      `[deleteUserWorkout] Error deleting workout ${workoutId} for user ${id}:`,
+      error
+    );
+    return false;
+  }
+};
+
 module.exports = {
   // Legacy functions (keep for backward compatibility)
   saveUserToken,
@@ -413,6 +557,11 @@ module.exports = {
   getUserTokens,
   updateUserProfile,
   deleteUserData,
+
+  // Workout functions
+  saveWorkout,
+  getUserWorkouts,
+  deleteUserWorkout,
 
   // Helper functions
   toDynamoDBItem,
