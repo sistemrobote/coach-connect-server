@@ -139,7 +139,7 @@ app.get("/auth/exchange_token", async (req, res) => {
     res.cookie("auth_token", jwtToken, {
       httpOnly: true, // Prevent XSS access
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: "/", // Available site-wide
     });
@@ -402,7 +402,8 @@ app.post("/auth/logout", optionalAuth, async (req, res) => {
     res.clearCookie("auth_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: process.env.NODE_ENV === "lax",
       path: "/",
     });
 
@@ -473,7 +474,7 @@ app.post("/auth/refresh", authenticateJWT, async (req, res) => {
     res.cookie("auth_token", newJWT, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -638,7 +639,7 @@ app.delete("/user/account", authenticateJWT, async (req, res) => {
     res.clearCookie("auth_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "lax",
       path: "/",
     });
 
