@@ -1,37 +1,24 @@
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { getStravaSecrets } = require("../secrets");
 
 /**
  * Configure CORS middleware with dynamic origin based on secrets
  */
 const configureCors = () => {
   return cors({
-    origin: async (origin, callback) => {
-      try {
-        if (!origin) return callback(null, true);
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
 
-        const secrets = await getStravaSecrets();
-        const allowedOrigins = [
-          "https://www.hmap.click",
-          "http://localhost:5173",
-        ].filter(Boolean);
+      const allowedOrigins = [
+        "https://www.hmap.click",
+        "http://localhost:5173",
+      ];
 
-        if (allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          console.warn(`[CORS] Blocked origin: ${origin}`);
-          callback(new Error("Not allowed by CORS"));
-        }
-      } catch (error) {
-        console.error("[CORS] Error fetching secrets:", error);
-        // Fallback to localhost in case of error
-        const fallbackOrigins = ["http://localhost:5173"];
-        if (fallbackOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("CORS configuration error"));
-        }
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`[CORS] Blocked origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true, // Allow cookies to be sent
