@@ -13,7 +13,7 @@ const configureCors = () => {
 
         const secrets = await getStravaSecrets();
         const allowedOrigins = [
-          secrets.REDIRECT_URI,
+          "https://www.hmap.click",
           "http://localhost:5173",
         ].filter(Boolean);
 
@@ -70,7 +70,7 @@ const requestLogger = (req, res, next) => {
  */
 const errorHandler = (err, req, res, next) => {
   console.error(`[Error] ${req.method} ${req.path}:`, err);
-  
+
   // Don't leak error details in production
   if (process.env.NODE_ENV === "production") {
     res.status(500).json({
